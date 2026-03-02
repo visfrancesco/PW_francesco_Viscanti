@@ -136,9 +136,3 @@ docker compose down
 # Ferma e cancella i dati persistenti
 docker compose down -v
 ```
-
-## Documentazione
-
-- [`docs/requisiti.md`](docs/requisiti.md) — specifica completa (use case UC-01..UC-06, requisiti funzionali, non-funzionali, integrazione)
-- [`docs/rapporto_implementazione.md`](docs/rapporto_implementazione.md) — rapporto di implementazione
-- [`plan.md`](plan.md) — piano di implementazione (9 workstream)
