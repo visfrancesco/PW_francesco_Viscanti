@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tenuta Ferrante — Dashboard IoT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Base ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0f1117;
+      --bg-secondary: #1a1d27;
+      --bg-card: #21242f;
+      --bg-card-hover: #282c3a;
+      --border: #2d3142;
+      --text-primary: #e8eaed;
+      --text-secondary: #9ba1b0;
+      --text-muted: #636a7e;
+      --accent: #4f8cff;
+      --accent-dim: rgba(79, 140, 255, 0.12);
+      --green: #34d399;
+      --green-dim: rgba(52, 211, 153, 0.12);
+      --yellow: #fbbf24;
+      --yellow-dim: rgba(251, 191, 36, 0.12);
+      --red: #f87171;
+      --red-dim: rgba(248, 113, 113, 0.12);
+      --orange: #fb923c;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+      --transition: 150ms ease;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ────────────────────────────────────────────────────── */
+    .app {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Header ────────────────────────────────────────────────────── */
+    .header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #34d399, #4f8cff);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .header-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .connection-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--red-dim);
+      color: var(--red);
+      transition: var(--transition);
+    }
+
+    .connection-badge.connected {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .connection-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* ── Main Content ──────────────────────────────────────────────── */
+    .main {
+      padding: 20px 24px;
+      overflow-y: auto;
+    }
+
+    /* ── Stats Bar ─────────────────────────────────────────────────── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .stat-value.green { color: var(--green); }
+    .stat-value.accent { color: var(--accent); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.red { color: var(--red); }
+    .stat-value.orange { color: var(--orange); }
+
+    /* ── Section Title ─────────────────────────────────────────────── */
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    /* ── Zone Tabs ─────────────────────────────────────────────────── */
+    .zone-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .zone-tab {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 16px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .zone-tab:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent);
+    }
+
+    .zone-tab.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Parcelle Grid ─────────────────────────────────────────────── */
+    .parcelle-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .parcella-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .parcella-card:hover {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+      transform: translateY(-1px);
+    }
+
+    .parcella-card.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .parcella-header {
+      padding: 12px 14px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .parcella-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .parcella-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .parcella-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .parcella-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .parcella-badge.online {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .parcella-badge.offline {
+      background: var(--red-dim);
+      color: var(--red);
+    }
+
+    .parcella-badge.partial {
+      background: var(--yellow-dim);
+      color: var(--yellow);
+    }
+
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+    }
+
+    .sensor-cell {
+      background: var(--bg-card);
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .parcella-card:hover .sensor-cell {
+      background: var(--bg-card-hover);
+    }
+
+    .sensor-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .sensor-value {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .sensor-unit {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-left: 2px;
+    }
+
+    .sensor-value.alert {
+      color: var(--red);
+    }
+
+    .sensor-cell.stale-warn {
+      background: var(--yellow-dim);
+    }
+
+    .sensor-cell.stale-err {
+      background: var(--red-dim);
+    }
+
+    /* ── Detail Panel (charts) ────────────────────────────────────── */
+    .detail-panel {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .detail-panel.visible {
+      display: block;
+    }
+
+    .detail-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .detail-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .detail-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .btn-close-detail {
+      font-family: inherit;
+      font-size: 20px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+
+    .btn-close-detail:hover {
+      color: var(--text-primary);
+      background: var(--bg-card-hover);
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .chart-cell {
+      background: var(--bg-card);
+      padding: 16px;
+    }
+
+    .chart-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .chart-container {
+      height: 160px;
+      position: relative;
+    }
+
+    /* ── Irrigation + Alerts ──────────────────────────────────────── */
+    .bottom-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 14px;
+    }
+
+    .valve-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .valve-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .valve-row:last-child {
+      border-bottom: none;
+    }
+
+    .valve-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .valve-name {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .valve-status {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .valve-status.chiusa { color: var(--text-muted); }
+    .valve-status.aperta { color: var(--green); }
+    .valve-status.in_esecuzione { color: var(--yellow); }
+    .valve-status.offline { color: var(--red); }
+
+    .valve-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-open {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .btn-open:hover:not(:disabled) {
+      background: rgba(52, 211, 153, 0.25);
+    }
+
+    .btn-close {
+      background: var(--red-dim);
+      color: var(--red);
+    }
+
+    .btn-close:hover:not(:disabled) {
+      background: rgba(248, 113, 113, 0.25);
+    }
+
+    /* ── Alerts Panel ──────────────────────────────────────────────── */
+    .alert-empty {
+      color: var(--text-muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .alert-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      animation: alertIn 300ms ease;
+    }
+
+    .alert-item:last-child { margin-bottom: 0; }
+
+    .alert-item.critico {
+      background: var(--red-dim);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+    }
+
+    .alert-item.alto {
+      background: var(--yellow-dim);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .alert-item.medio {
+      background: var(--accent-dim);
+      border: 1px solid rgba(79, 140, 255, 0.2);
+    }
+
+    @keyframes alertIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .alert-item.critico .alert-icon {
+      background: rgba(248, 113, 113, 0.2);
+      color: var(--red);
+    }
+
+    .alert-item.alto .alert-icon {
+      background: rgba(251, 191, 36, 0.2);
+      color: var(--yellow);
+    }
+
+    .alert-item.medio .alert-icon {
+      background: rgba(79, 140, 255, 0.2);
+      color: var(--accent);
+    }
+
+    .alert-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .alert-title {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .alert-detail {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .alert-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .alerts-scroll {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    /* ── Alert Tabs ────────────────────────────────────────────────── */
+    .alert-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .alert-tab {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .alert-tab:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent);
+    }
+
+    .alert-tab.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Active Alert Items (redesigned) ───────────────────────────── */
+    .alert-icon-emoji {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      line-height: 1;
+    }
+
+    .alert-top-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .alert-title-new {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .alert-duration {
+      font-size: 10px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .alert-count {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── Alert History Items ───────────────────────────────────────── */
+    .alert-history-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 4px;
+      font-size: 12px;
+    }
+
+    .alert-history-item.critico { background: rgba(248, 113, 113, 0.06); }
+    .alert-history-item.alto { background: rgba(251, 191, 36, 0.06); }
+    .alert-history-item.medio { background: rgba(79, 140, 255, 0.06); }
+
+    .alert-history-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      min-width: 90px;
+    }
+
+    .alert-history-label {
+      font-weight: 600;
+      font-size: 11px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .alert-history-dur {
+      font-size: 10px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ── Simulator Controls ────────────────────────────────────────── */
+    .sim-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sim-row:last-child { border-bottom: none; }
+
+    .sim-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sim-name {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .sim-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .sim-dot.running { background: var(--green); }
+
+    .sim-actions { display: flex; gap: 4px; }
+
+    .sim-global {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn-sim {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-sim.start {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+
+    .btn-sim.start:hover { background: rgba(52, 211, 153, 0.25); }
+
+    .btn-sim.stop {
+      background: var(--red-dim);
+      color: var(--red);
+    }
+
+    .btn-sim.stop:hover { background: rgba(248, 113, 113, 0.25); }
+
+    /* ── Simulator Accordion ──────────────────────────────────────── */
+    .sim-accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .sim-accordion-header:last-of-type { border-bottom: none; }
+
+    .sim-accordion-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .sim-accordion-arrow {
+      font-size: 10px;
+      color: var(--text-muted);
+      transition: transform var(--transition);
+      width: 14px;
+      text-align: center;
+    }
+
+    .sim-accordion-arrow.expanded { transform: rotate(90deg); }
+
+    .sim-parcelle-panel {
+      display: none;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin: 4px 0 8px 0;
+      padding: 8px 12px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .sim-parcelle-panel.visible { display: block; }
+
+    .sim-parcella-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .sim-parcella-row:last-child { border-bottom: none; }
+
+    .sim-parcella-name {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .sim-parcella-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sim-parcella-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Toggle switch */
+    .toggle {
+      position: relative;
+      width: 34px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 18px;
+      transition: var(--transition);
+    }
+
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 2px;
+      bottom: 2px;
+      background: var(--text-secondary);
+      border-radius: 50%;
+      transition: var(--transition);
+    }
+
+    .toggle input:checked + .toggle-slider {
+      background: var(--accent);
+    }
+
+    .toggle input:checked + .toggle-slider::before {
+      transform: translateX(16px);
+      background: #fff;
+    }
+
+    .sim-parcella-status {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .sim-parcella-status.chiusa { color: var(--text-muted); }
+    .sim-parcella-status.aperta { color: var(--green); }
+
+    /* ── Custom Range Picker ─────────────────────────────────────── */
+    .custom-range-picker {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .custom-range-picker.visible { display: flex; }
+
+    .custom-range-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .custom-range-label input {
+      font-family: inherit;
+      font-size: 11px;
+      padding: 4px 8px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      outline: none;
+    }
+
+    .custom-range-label input:focus {
+      border-color: var(--accent);
+    }
+
+    /* ── Log Panel ─────────────────────────────────────────────────── */
+    .log-section {
+      margin-top: 24px;
+    }
+
+    .log-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      max-height: 180px;
+      overflow-y: auto;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      font-size: 11px;
+      line-height: 1.7;
+      color: var(--text-muted);
+    }
+
+    .log-entry { white-space: nowrap; }
+    .log-entry .time { color: var(--text-muted); }
+    .log-entry .topic { color: var(--accent); }
+    .log-entry .msg { color: var(--text-secondary); }
+
+    /* ── Responsive ────────────────────────────────────────────────── */
+    @media (max-width: 1280px) {
+      .parcelle-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 1024px) {
+      .parcelle-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-bar { grid-template-columns: repeat(3, 1fr); }
+      .charts-grid { grid-template-columns: repeat(2, 1fr); }
+      .sensor-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      .parcelle-grid { grid-template-columns: 1fr; }
+      .bottom-section { grid-template-columns: 1fr; }
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">TF</div>
+        <div>
+          <span class="header-title">Tenuta Ferrante</span>
+          <span class="header-subtitle">IoT Dashboard</span>
+        </div>
+      </div>
+      <div id="connection-badge" class="connection-badge">
+        <span class="connection-dot"></span>
+        <span id="connection-text">Disconnesso</span>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <span class="stat-label">Throughput</span>
+          <span id="stat-messages" class="stat-value accent">0 <small style="font-size:12px;font-weight:400;">msg/s</small></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Sensori attivi</span>
+          <span id="stat-sensors" class="stat-value green">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Sensori offline</span>
+          <span id="stat-offline" class="stat-value orange">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Comandi inviati</span>
+          <span id="stat-commands" class="stat-value yellow">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Alert attivi</span>
+          <span id="stat-alerts" class="stat-value red">0</span>
+        </div>
+      </div>
+
+      <!-- Zone Tabs + Time Range -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <div class="section-title" style="margin-bottom: 0;">Microclima Parcelle</div>
+        <div class="zone-tabs" style="margin-bottom: 0; align-items: center;" id="time-range-tabs">
+          <button class="zone-tab" data-range="5m" onclick="setTimeRange('5m')">5m</button>
+          <button class="zone-tab" data-range="15m" onclick="setTimeRange('15m')">15m</button>
+          <button class="zone-tab active" data-range="1h" onclick="setTimeRange('1h')">1h</button>
+          <button class="zone-tab" data-range="6h" onclick="setTimeRange('6h')">6h</button>
+          <button class="zone-tab" data-range="24h" onclick="setTimeRange('24h')">24h</button>
+          <span style="width: 1px; height: 20px; background: var(--border); margin: 0 4px;"></span>
+          <button class="zone-tab" data-range="custom" id="btn-custom-range" onclick="toggleCustomRange()">Custom</button>
+          <div id="custom-range-picker" class="custom-range-picker">
+            <label class="custom-range-label">Da <input type="datetime-local" id="custom-from"></label>
+            <label class="custom-range-label">A <input type="datetime-local" id="custom-to"></label>
+            <button class="zone-tab" onclick="applyCustomRange()" style="padding: 4px 10px;">Applica</button>
+          </div>
+        </div>
+      </div>
+      <div class="zone-tabs">
+        <button class="zone-tab active" data-zone="tutte" onclick="filterZone('tutte')">Tutte (12)</button>
+        <button class="zone-tab" data-zone="alta" onclick="filterZone('alta')">Zona Alta (4)</button>
+        <button class="zone-tab" data-zone="media" onclick="filterZone('media')">Zona Media (4)</button>
+        <button class="zone-tab" data-zone="bassa" onclick="filterZone('bassa')">Zona Bassa (4)</button>
+      </div>
+
+      <!-- Parcelle Grid -->
+      <div id="parcelle-grid" class="parcelle-grid"></div>
+
+      <!-- Detail Panel (charts) -->
+      <div id="detail-panel" class="detail-panel">
+        <div class="detail-header">
+          <div>
+            <div id="detail-title" class="detail-title"></div>
+            <div id="detail-subtitle" class="detail-subtitle"></div>
+          </div>
+          <button class="btn-close-detail" onclick="closeDetail()">&times;</button>
+        </div>
+        <div class="charts-grid">
+          <div class="chart-cell">
+            <div class="chart-label">Temperatura</div>
+            <div class="chart-container"><canvas id="chart-temperatura"></canvas></div>
+          </div>
+          <div class="chart-cell">
+            <div class="chart-label">Umidita</div>
+            <div class="chart-container"><canvas id="chart-umidita"></canvas></div>
+          </div>
+          <div class="chart-cell">
+            <div class="chart-label">Vento</div>
+            <div class="chart-container"><canvas id="chart-vento"></canvas></div>
+          </div>
+          <div class="chart-cell">
+            <div class="chart-label">Direzione Vento</div>
+            <div class="chart-container"><canvas id="chart-direzione_vento"></canvas></div>
+          </div>
+          <div class="chart-cell">
+            <div class="chart-label">Pioggia</div>
+            <div class="chart-container"><canvas id="chart-pioggia"></canvas></div>
+          </div>
+          <div class="chart-cell">
+            <div class="chart-label">Radiazione Solare</div>
+            <div class="chart-container"><canvas id="chart-radiazione"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Irrigation + Alerts + Simulators -->
+      <div class="bottom-section" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="panel">
+          <div class="panel-title">Controllo Irrigazione</div>
+          <div id="valves-list" class="valve-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Alert</div>
+          <div id="alerts-container">
+            <div class="alert-tabs">
+              <button class="alert-tab active" onclick="switchAlertTab('attivi')">Attivi</button>
+              <button class="alert-tab" onclick="switchAlertTab('storico')">Storico</button>
+            </div>
+            <div class="alert-empty">Nessun alert attivo — tutto nella norma</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Simulatori</div>
+          <div class="sim-global">
+            <button class="btn-sim start" onclick="simStartAll()">Avvia tutti</button>
+            <button class="btn-sim stop" onclick="simStopAll()">Ferma tutti</button>
+          </div>
+          <div id="sim-list"></div>
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div class="log-section">
+        <div class="section-title">Log MQTT</div>
+        <div id="log-panel" class="log-panel"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/mqtt@5/dist/mqtt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
